@@ -257,8 +257,8 @@ class MockLLMProvider(BaseLLMProvider):
         return lines
 
 
-class OpenAILLMProvider(BaseLLMProvider):
-    """Optional OpenAI chat completions adapter."""
+class GeminiLLMProvider(BaseLLMProvider):
+    """Google Gemini generateContent adapter."""
 
     def __init__(self, api_key: str, model: str) -> None:
         self.api_key = api_key
@@ -274,25 +274,37 @@ class OpenAILLMProvider(BaseLLMProvider):
 
         start = time.perf_counter()
         headers = {
-            "Authorization": f"Bearer {self.api_key}",
+            "X-goog-api-key": self.api_key,
             "Content-Type": "application/json",
         }
-        body = {
-            "model": self.model,
-            "messages": messages,
-            "temperature": 0.6,
-            "max_tokens": max(256, config.maxWords * 2),
+        system_instruction: dict[str, Any] | None = None
+        contents: list[dict[str, Any]] = []
+        for msg in messages:
+            role = msg.get("role", "user")
+            content = msg.get("content", "")
+            if role == "system":
+                system_instruction = {"parts": [{"text": content}]}
+            elif role == "assistant":
+                contents.append({"role": "model", "parts": [{"text": content}]})
+            else:
+                contents.append({"role": "user", "parts": [{"text": content}]})
+
+        body: dict[str, Any] = {
+            "contents": contents,
         }
+        if system_instruction:
+            body["system_instruction"] = system_instruction
+
         async with httpx.AsyncClient(timeout=settings.llm_timeout_seconds) as client:
             resp = await client.post(
-                "https://api.openai.com/v1/chat/completions",
+                f"https://generativelanguage.googleapis.com/v1beta/models/{self.model}:generateContent",
                 headers=headers,
                 json=body,
             )
             resp.raise_for_status()
             data = resp.json()
 
-        answer = data["choices"][0]["message"]["content"].strip()
+        answer = data["candidates"][0]["content"]["parts"][0]["text"].strip()
         latency_ms = (time.perf_counter() - start) * 1000
         n = len(config.selectedContext)
         confidence: str = "HIGH" if n >= 4 else ("MEDIUM" if n >= 2 else "LOW")
@@ -307,9 +319,9 @@ class OpenAILLMProvider(BaseLLMProvider):
 
 def get_llm_provider() -> BaseLLMProvider:
     provider = (settings.llm_provider or "mock").lower()
-    if provider == "openai" and settings.openai_api_key:
-        logger.info("Using OpenAI LLM provider model=%s", settings.llm_model)
-        return OpenAILLMProvider(settings.openai_api_key, settings.llm_model)
+    if provider == "gemini" and settings.google_api_key:
+        logger.info("Using Gemini LLM provider model=%s", settings.llm_model)
+        return GeminiLLMProvider(settings.google_api_key, settings.llm_model)
     if provider != "mock":
         logger.warning("LLM provider '%s' unavailable or missing key; falling back to mock", provider)
     return MockLLMProvider()

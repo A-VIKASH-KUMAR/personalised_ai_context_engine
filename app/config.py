@@ -26,9 +26,9 @@ class Settings(BaseSettings):
     cache_ttl_panchang: int = 120
 
     # LLM
-    llm_provider: str = "mock"  # mock | openai | anthropic
-    llm_model: str = "gpt-4o-mini"
-    openai_api_key: str | None = None
+    llm_provider: str = "gemini"  # mock | gemini
+    llm_model: str = "gemini-3.5-flash"
+    google_api_key: str | None = None
     anthropic_api_key: str | None = None
     panchang_api_key: str | None = None
     llm_timeout_seconds: float = 15.0
@@ -66,7 +66,6 @@ class Settings(BaseSettings):
     mongodb_users_collection: str = "users"
 
     class Config:
-        env_prefix = "MYNAKSH_"
         env_file = ".env"
         extra = "ignore"
 
