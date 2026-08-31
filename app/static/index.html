@@ -1,0 +1,1027 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Personalized AI Context Engine</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: #e0e0e0;
+            padding: 20px;
+        }
+
+        .auth-container {
+            width: 100%;
+            max-width: 420px;
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+
+        .auth-container h1 {
+            font-size: 1.8rem;
+            font-weight: 600;
+            color: #fff;
+            text-align: center;
+            margin-bottom: 8px;
+        }
+
+        .auth-container .subtitle {
+            text-align: center;
+            color: #888;
+            font-size: 0.9rem;
+            margin-bottom: 30px;
+        }
+
+        .form-group {
+            margin-bottom: 18px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 6px;
+            font-size: 0.85rem;
+            color: #aaa;
+            font-weight: 500;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 12px 16px;
+            border-radius: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            background: rgba(255, 255, 255, 0.1);
+            color: #fff;
+            font-size: 0.95rem;
+            outline: none;
+            transition: border-color 0.3s ease;
+        }
+
+        .form-group input:focus {
+            border-color: #667eea;
+        }
+
+        .form-group input::placeholder {
+            color: #888;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 12px;
+            border-radius: 12px;
+            border: none;
+            font-size: 0.95rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 6px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #fff;
+        }
+
+        .btn-primary:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-primary:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.1);
+            color: #e0e0e0;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.15);
+        }
+
+        .auth-toggle {
+            text-align: center;
+            margin-top: 20px;
+            font-size: 0.9rem;
+            color: #888;
+        }
+
+        .auth-toggle a {
+            color: #667eea;
+            cursor: pointer;
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .auth-toggle a:hover {
+            text-decoration: underline;
+        }
+
+        .error-msg {
+            color: #f87171;
+            font-size: 0.85rem;
+            margin-top: 8px;
+            text-align: center;
+            min-height: 20px;
+        }
+
+        .success-msg {
+            color: #4ade80;
+            font-size: 0.85rem;
+            margin-top: 8px;
+            text-align: center;
+            min-height: 20px;
+        }
+
+        /* Chat UI */
+        .chat-container {
+            width: 100%;
+            max-width: 800px;
+            height: 90vh;
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            position: relative;
+        }
+
+        .chat-header {
+            background: rgba(255, 255, 255, 0.08);
+            padding: 16px 20px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .chat-header h1 {
+            font-size: 1.3rem;
+            font-weight: 600;
+            color: #fff;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .chat-header h1::before {
+            content: "✨";
+            font-size: 1.5rem;
+        }
+
+        .user-badge {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.85rem;
+            color: #aaa;
+        }
+
+        .user-info strong {
+            color: #667eea;
+            font-weight: 600;
+        }
+
+        .btn-logout {
+            padding: 6px 14px;
+            border-radius: 8px;
+            border: 1px solid rgba(248, 113, 113, 0.3);
+            background: rgba(248, 113, 113, 0.1);
+            color: #f87171;
+            font-size: 0.8rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-logout:hover {
+            background: rgba(248, 113, 113, 0.2);
+        }
+
+        .status-indicator {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.85rem;
+            color: #aaa;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #666;
+            transition: background 0.3s ease;
+        }
+
+        .status-dot.connected {
+            background: #4ade80;
+            box-shadow: 0 0 10px rgba(74, 222, 128, 0.4);
+        }
+
+        .status-dot.disconnected {
+            background: #f87171;
+        }
+
+        .chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .message {
+            max-width: 80%;
+            padding: 12px 16px;
+            border-radius: 16px;
+            line-height: 1.5;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .message.user {
+            align-self: flex-end;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #fff;
+            border-bottom-right-radius: 4px;
+        }
+
+        .message.bot {
+            align-self: flex-start;
+            background: rgba(255, 255, 255, 0.1);
+            color: #e0e0e0;
+            border-bottom-left-radius: 4px;
+        }
+
+        .message.system {
+            align-self: center;
+            background: rgba(255, 255, 255, 0.05);
+            color: #888;
+            font-size: 0.85rem;
+            text-align: center;
+            max-width: 90%;
+        }
+
+        .message-sender {
+            font-size: 0.75rem;
+            font-weight: 600;
+            margin-bottom: 4px;
+            opacity: 0.8;
+        }
+
+        .message-time {
+            font-size: 0.7rem;
+            opacity: 0.6;
+            margin-top: 4px;
+        }
+
+        .chat-input-area {
+            padding: 16px 20px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .input-row {
+            display: flex;
+            gap: 10px;
+        }
+
+        .chat-input {
+            flex: 1;
+            padding: 12px 16px;
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            background: rgba(255, 255, 255, 0.1);
+            color: #fff;
+            font-size: 1rem;
+            outline: none;
+            transition: border-color 0.3s ease;
+        }
+
+        .chat-input:focus {
+            border-color: #667eea;
+        }
+
+        .chat-input::placeholder {
+            color: #888;
+        }
+
+        .btn-send {
+            padding: 12px 20px;
+            border-radius: 12px;
+            border: none;
+            font-size: 0.95rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #fff;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .btn-send:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-send:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .btn-end {
+            padding: 12px 20px;
+            border-radius: 12px;
+            border: 1px solid rgba(248, 113, 113, 0.3);
+            background: rgba(248, 113, 113, 0.2);
+            color: #f87171;
+            font-size: 0.95rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-end:hover:not(:disabled) {
+            background: rgba(248, 113, 113, 0.3);
+        }
+
+        .btn-end:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .connection-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(26, 26, 46, 0.95);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            gap: 20px;
+            z-index: 10;
+            border-radius: 20px;
+        }
+
+        .connection-overlay.hidden {
+            display: none;
+        }
+
+        .connection-overlay h2 {
+            color: #fff;
+            font-size: 1.5rem;
+        }
+
+        .connection-overlay p {
+            color: #888;
+            font-size: 0.95rem;
+        }
+
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 3px solid rgba(255, 255, 255, 0.1);
+            border-top-color: #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .welcome-message {
+            text-align: center;
+            padding: 40px;
+            color: #888;
+        }
+
+        .welcome-message h2 {
+            color: #fff;
+            margin-bottom: 10px;
+        }
+
+        .typing-indicator {
+            display: none;
+            align-self: flex-start;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 12px 16px;
+            border-radius: 16px;
+            border-bottom-left-radius: 4px;
+        }
+
+        .typing-indicator.active {
+            display: block;
+        }
+
+        .typing-indicator span {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            background: #888;
+            border-radius: 50%;
+            margin: 0 2px;
+            animation: typing 1.4s infinite;
+        }
+
+        .typing-indicator span:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+
+        .typing-indicator span:nth-child(3) {
+            animation-delay: 0.4s;
+        }
+
+        @keyframes typing {
+            0%, 60%, 100% { transform: translateY(0); }
+            30% { transform: translateY(-5px); }
+        }
+
+        .end-chat-summary {
+            text-align: center;
+            padding: 30px;
+            color: #888;
+        }
+
+        .end-chat-summary h3 {
+            color: #fff;
+            margin-bottom: 10px;
+        }
+
+        .end-chat-summary .stats {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            margin-top: 20px;
+        }
+
+        .stat {
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #667eea;
+        }
+
+        .stat-label {
+            font-size: 0.8rem;
+            color: #888;
+            margin-top: 4px;
+        }
+
+        .scrollbar-thin::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .scrollbar-thin::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .scrollbar-thin::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 3px;
+        }
+
+        .scrollbar-thin::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        .hidden {
+            display: none !important;
+        }
+    </style>
+</head>
+<body>
+    <!-- Login / Register View -->
+    <div id="authView" class="auth-container">
+        <h1>Personalised AI Context engine</h1>
+        <p class="subtitle" id="authSubtitle">Sign in to your account</p>
+
+        <form id="loginForm">
+            <div class="form-group">
+                <label for="loginEmail">Email</label>
+                <input type="email" id="loginEmail" placeholder="you@example.com" required>
+            </div>
+            <div class="form-group">
+                <label for="loginPassword">Password</label>
+                <input type="password" id="loginPassword" placeholder="Enter your password" required>
+            </div>
+            <div class="error-msg" id="loginError"></div>
+            <button type="submit" class="btn btn-primary" id="loginBtn">Sign In</button>
+        </form>
+
+        <form id="registerForm" class="hidden">
+            <div class="form-group">
+                <label for="regName">Full Name</label>
+                <input type="text" id="regName" placeholder="Aarav Sharma" required>
+            </div>
+            <div class="form-group">
+                <label for="regDob">Date of Birth</label>
+                <input type="date" id="regDob" required>
+            </div>
+            <div class="form-group">
+                <label for="regTob">Time of Birth</label>
+                <input type="time" id="regTob" required>
+            </div>
+            <div class="form-group">
+                <label for="regPob">Place of Birth (optional)</label>
+                <input type="text" id="regPob" placeholder="Delhi">
+            </div>
+            <div class="form-group">
+                <label for="regEmail">Email</label>
+                <input type="email" id="regEmail" placeholder="you@example.com" required>
+            </div>
+            <div class="form-group">
+                <label for="regPassword">Password</label>
+                <input type="password" id="regPassword" placeholder="Min 6 characters" required>
+            </div>
+            <div class="error-msg" id="registerError"></div>
+            <div class="success-msg" id="registerSuccess"></div>
+            <button type="submit" class="btn btn-primary" id="registerBtn">Create Account</button>
+        </form>
+
+        <div class="auth-toggle">
+            <span id="toggleText">Don't have an account?</span>
+            <a id="toggleAuth">Register</a>
+        </div>
+    </div>
+
+    <!-- Chat View -->
+    <div id="chatView" class="chat-container hidden">
+        <div class="chat-header">
+            <h1>Personalised AI Context engine</h1>
+            <div class="user-badge">
+                <div class="user-info">
+                    <span>ID:</span>
+                    <strong id="displayUserId">—</strong>
+                    <span id="displayUserName" style="color:#888;margin-left:4px;"></span>
+                </div>
+                <button class="btn-logout" id="logoutBtn">Logout</button>
+            </div>
+            <div class="status-indicator">
+                <span class="status-dot" id="statusDot"></span>
+                <span id="statusText">Connecting...</span>
+            </div>
+        </div>
+
+        <div class="chat-messages scrollbar-thin" id="chatMessages">
+            <div class="welcome-message" id="welcomeMessage">
+                <h2>Welcome to MyNaksh</h2>
+                <p>Ask about your career, relationships, health, or finance for personalized astrological guidance.</p>
+            </div>
+        </div>
+
+        <div class="typing-indicator" id="typingIndicator">
+            <span></span>
+            <span></span>
+            <span></span>
+        </div>
+
+        <div class="chat-input-area">
+            <div class="input-row">
+                <input
+                    type="text"
+                    class="chat-input"
+                    id="messageInput"
+                    placeholder="Ask about your career, relationships, health, or finance..."
+                    disabled
+                >
+                <button class="btn-send" id="sendBtn" disabled>Send</button>
+                <button class="btn-end" id="endBtn" disabled>End Chat</button>
+            </div>
+        </div>
+
+        <div class="connection-overlay" id="connectionOverlay">
+            <div class="spinner"></div>
+            <h2>Connecting...</h2>
+            <p>Establishing WebSocket connection</p>
+        </div>
+    </div>
+
+    <script>
+        class AuthClient {
+            constructor() {
+                this.token = localStorage.getItem('mynaksh_token') || null;
+                this.user = JSON.parse(localStorage.getItem('mynaksh_user') || 'null');
+                this.isRegisterMode = false;
+
+                this.loginForm = document.getElementById('loginForm');
+                this.registerForm = document.getElementById('registerForm');
+                this.loginBtn = document.getElementById('loginBtn');
+                this.registerBtn = document.getElementById('registerBtn');
+                this.loginError = document.getElementById('loginError');
+                this.registerError = document.getElementById('registerError');
+                this.registerSuccess = document.getElementById('registerSuccess');
+                this.toggleAuth = document.getElementById('toggleAuth');
+                this.toggleText = document.getElementById('toggleText');
+                this.authSubtitle = document.getElementById('authSubtitle');
+
+                this.authView = document.getElementById('authView');
+                this.chatView = document.getElementById('chatView');
+
+                this.init();
+            }
+
+            init() {
+                if (this.token && this.user) {
+                    this.showChat();
+                    return;
+                }
+
+                this.loginForm.addEventListener('submit', (e) => {
+                    e.preventDefault();
+                    this.handleLogin();
+                });
+
+                this.registerForm.addEventListener('submit', (e) => {
+                    e.preventDefault();
+                    this.handleRegister();
+                });
+
+                this.toggleAuth.addEventListener('click', () => this.toggleMode());
+            }
+
+            toggleMode() {
+                this.isRegisterMode = !this.isRegisterMode;
+                if (this.isRegisterMode) {
+                    this.loginForm.classList.add('hidden');
+                    this.registerForm.classList.remove('hidden');
+                    this.toggleText.textContent = 'Already have an account?';
+                    this.toggleAuth.textContent = 'Sign In';
+                    this.authSubtitle.textContent = 'Create a new account';
+                } else {
+                    this.registerForm.classList.add('hidden');
+                    this.loginForm.classList.remove('hidden');
+                    this.toggleText.textContent = "Don't have an account?";
+                    this.toggleAuth.textContent = 'Register';
+                    this.authSubtitle.textContent = 'Sign in to your account';
+                }
+                this.loginError.textContent = '';
+                this.registerError.textContent = '';
+                this.registerSuccess.textContent = '';
+            }
+
+            async handleLogin() {
+                const email = document.getElementById('loginEmail').value.trim();
+                const password = document.getElementById('loginPassword').value;
+
+                if (!email || !password) {
+                    this.loginError.textContent = 'Please fill in all fields.';
+                    return;
+                }
+
+                this.loginBtn.disabled = true;
+                this.loginBtn.textContent = 'Signing in...';
+                this.loginError.textContent = '';
+
+                try {
+                    const resp = await fetch('/auth/login', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ email, password }),
+                    });
+
+                    if (!resp.ok) {
+                        const data = await resp.json();
+                        throw new Error(data.detail || 'Login failed');
+                    }
+
+                    const data = await resp.json();
+                    this.token = data.access_token;
+                    localStorage.setItem('mynaksh_token', this.token);
+
+                    await this.fetchUser();
+                } catch (err) {
+                    this.loginError.textContent = err.message;
+                    this.loginBtn.disabled = false;
+                    this.loginBtn.textContent = 'Sign In';
+                }
+            }
+
+            async handleRegister() {
+                const name = document.getElementById('regName').value.trim();
+                const email = document.getElementById('regEmail').value.trim();
+                const password = document.getElementById('regPassword').value;
+                const dob = document.getElementById('regDob').value;
+                const tob = document.getElementById('regTob').value;
+                const pob = document.getElementById('regPob').value.trim();
+
+                if (!name || !email || !password || !dob || !tob) {
+                    this.registerError.textContent = 'Please fill in all required fields.';
+                    return;
+                }
+
+                if (password.length < 6) {
+                    this.registerError.textContent = 'Password must be at least 6 characters.';
+                    return;
+                }
+
+                this.registerBtn.disabled = true;
+                this.registerBtn.textContent = 'Creating account...';
+                this.registerError.textContent = '';
+                this.registerSuccess.textContent = '';
+
+                try {
+                    const resp = await fetch('/auth/register', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            email,
+                            password,
+                            name,
+                            date_of_birth: dob,
+                            time_of_birth: tob,
+                            place_of_birth: pob || null,
+                        }),
+                    });
+
+                    if (!resp.ok) {
+                        const data = await resp.json();
+                        throw new Error(data.detail || 'Registration failed');
+                    }
+
+                    const user = await resp.json();
+                    this.registerSuccess.textContent = 'Account created! Please sign in.';
+                    this.registerBtn.disabled = false;
+                    this.registerBtn.textContent = 'Create Account';
+
+                    setTimeout(() => {
+                        this.toggleMode();
+                        this.registerSuccess.textContent = '';
+                        document.getElementById('loginEmail').value = email;
+                    }, 800);
+                } catch (err) {
+                    this.registerError.textContent = err.message;
+                    this.registerBtn.disabled = false;
+                    this.registerBtn.textContent = 'Create Account';
+                }
+            }
+
+            async fetchUser() {
+                if (!this.token) return;
+                try {
+                    const resp = await fetch(`/auth/me?token=${encodeURIComponent(this.token)}`);
+                    if (!resp.ok) throw new Error('Failed to fetch user info');
+                    this.user = await resp.json();
+                    localStorage.setItem('mynaksh_user', JSON.stringify(this.user));
+                    this.showChat();
+                } catch (err) {
+                    console.error('Failed to fetch user:', err);
+                    this.logout();
+                }
+            }
+
+            showChat() {
+                this.authView.classList.add('hidden');
+                this.chatView.classList.remove('hidden');
+                document.getElementById('displayUserId').textContent = this.user.id;
+                document.getElementById('displayUserName').textContent = this.user.name ? `(${this.user.name})` : '';
+                window.chatClient = new ChatClient(this.token, this.user.id);
+            }
+
+            logout() {
+                localStorage.removeItem('mynaksh_token');
+                localStorage.removeItem('mynaksh_user');
+                this.token = null;
+                this.user = null;
+                this.chatView.classList.add('hidden');
+                this.authView.classList.remove('hidden');
+                this.loginBtn.disabled = false;
+                this.loginBtn.textContent = 'Sign In';
+                this.registerBtn.disabled = false;
+                this.registerBtn.textContent = 'Create Account';
+                this.loginError.textContent = '';
+                this.registerError.textContent = '';
+            }
+        }
+
+        class ChatClient {
+            constructor(token, userId) {
+                this.token = token;
+                this.userId = userId;
+                this.ws = null;
+                this.isConnected = false;
+                this.messageCount = 0;
+
+                this.chatMessages = document.getElementById('chatMessages');
+                this.messageInput = document.getElementById('messageInput');
+                this.sendBtn = document.getElementById('sendBtn');
+                this.endBtn = document.getElementById('endBtn');
+                this.statusDot = document.getElementById('statusDot');
+                this.statusText = document.getElementById('statusText');
+                this.typingIndicator = document.getElementById('typingIndicator');
+                this.connectionOverlay = document.getElementById('connectionOverlay');
+                this.welcomeMessage = document.getElementById('welcomeMessage');
+                this.logoutBtn = document.getElementById('logoutBtn');
+
+                this.init();
+            }
+
+            init() {
+                this.sendBtn.addEventListener('click', () => this.sendMessage());
+                this.endBtn.addEventListener('click', () => this.endChat());
+                this.messageInput.addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter') this.sendMessage();
+                });
+                this.logoutBtn.addEventListener('click', () => {
+                    if (this.ws) this.ws.close();
+                    window.authClient.logout();
+                });
+
+                this.connect();
+            }
+
+            connect() {
+                if (this.isConnected) return;
+
+                this.connectionOverlay.classList.remove('hidden');
+
+                const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+                const wsUrl = `${protocol}//${window.location.host}/ws/chat?token=${encodeURIComponent(this.token)}`;
+
+                try {
+                    this.ws = new WebSocket(wsUrl);
+
+                    this.ws.onopen = () => {
+                        this.isConnected = true;
+                        this.connectionOverlay.classList.add('hidden');
+                        this.updateStatus('connected', 'Connected');
+                        this.messageInput.disabled = false;
+                        this.sendBtn.disabled = false;
+                        this.endBtn.disabled = false;
+
+                        if (this.welcomeMessage) {
+                            this.welcomeMessage.remove();
+                            this.welcomeMessage = null;
+                        }
+                        this.addSystemMessage(`Connected as ${this.userId}. Ask me anything about your astrological insights!`);
+                    };
+
+                    this.ws.onmessage = (event) => {
+                        const data = JSON.parse(event.data);
+                        this.handleMessage(data);
+                    };
+
+                    this.ws.onerror = () => {
+                        this.updateStatus('disconnected', 'Error');
+                        this.addSystemMessage('Connection error. Please try again.');
+                        this.connectionOverlay.classList.add('hidden');
+                    };
+
+                    this.ws.onclose = () => {
+                        this.isConnected = false;
+                        this.updateStatus('disconnected', 'Disconnected');
+                        this.messageInput.disabled = true;
+                        this.sendBtn.disabled = true;
+                        this.endBtn.disabled = true;
+                        this.typingIndicator.classList.remove('active');
+                    };
+                } catch (error) {
+                    this.connectionOverlay.classList.add('hidden');
+                    this.addSystemMessage('Failed to connect. Please refresh the page.');
+                }
+            }
+
+            handleMessage(data) {
+                this.typingIndicator.classList.remove('active');
+
+                if (data.type === 'response') {
+                    this.addBotMessage(data.answer, data.confidence, data.sourcesUsed);
+                    this.messageCount++;
+                } else if (data.type === 'error') {
+                    this.addSystemMessage(`Error: ${data.message}`);
+                } else if (data.type === 'info') {
+                    this.addSystemMessage(data.message);
+                }
+            }
+
+            sendMessage() {
+                const message = this.messageInput.value.trim();
+                if (!message || !this.isConnected) return;
+
+                this.addUserMessage(message);
+
+                this.ws.send(JSON.stringify({
+                    question: message
+                }));
+
+                this.messageInput.value = '';
+                this.typingIndicator.classList.add('active');
+                this.scrollToBottom();
+            }
+
+            endChat() {
+                if (!this.isConnected) return;
+
+                this.ws.send(JSON.stringify({ action: 'end' }));
+                this.addSystemMessage('Chat ended by user.');
+
+                setTimeout(() => {
+                    this.ws.close();
+                }, 500);
+            }
+
+            addUserMessage(text) {
+                const messageDiv = document.createElement('div');
+                messageDiv.className = 'message user';
+                messageDiv.innerHTML = `
+                    <div class="message-sender">You</div>
+                    <div>${this.escapeHtml(text)}</div>
+                    <div class="message-time">${this.getTime()}</div>
+                `;
+                this.chatMessages.appendChild(messageDiv);
+                this.scrollToBottom();
+            }
+
+            addBotMessage(text, confidence, sources) {
+                const messageDiv = document.createElement('div');
+                messageDiv.className = 'message bot';
+
+                let sourcesHtml = '';
+                if (sources && sources.length > 0) {
+                    sourcesHtml = `<div style="margin-top: 8px; font-size: 0.8rem; opacity: 0.7;">
+                        <strong>Sources:</strong> ${sources.slice(0, 3).join(', ')}${sources.length > 3 ? '...' : ''}
+                    </div>`;
+                }
+
+                messageDiv.innerHTML = `
+                    <div class="message-sender">MyNaksh (${confidence})</div>
+                    <div>${this.escapeHtml(text)}</div>
+                    ${sourcesHtml}
+                    <div class="message-time">${this.getTime()}</div>
+                `;
+                this.chatMessages.appendChild(messageDiv);
+                this.scrollToBottom();
+            }
+
+            addSystemMessage(text) {
+                const messageDiv = document.createElement('div');
+                messageDiv.className = 'message system';
+                messageDiv.textContent = text;
+                this.chatMessages.appendChild(messageDiv);
+                this.scrollToBottom();
+            }
+
+            updateStatus(status, text) {
+                this.statusDot.className = `status-dot ${status}`;
+                this.statusText.textContent = text;
+            }
+
+            scrollToBottom() {
+                this.chatMessages.scrollTop = this.chatMessages.scrollHeight;
+            }
+
+            getTime() {
+                return new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            }
+
+            escapeHtml(text) {
+                const div = document.createElement('div');
+                div.textContent = text;
+                return div.innerHTML;
+            }
+        }
+
+        window.authClient = new AuthClient();
+    </script>
+</body>
+</html>

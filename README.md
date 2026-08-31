@@ -76,12 +76,11 @@ uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
 
 OpenAPI docs: http://127.0.0.1:8000/docs
 
-### Optional real LLM
+### set the below api keys
 
 ```bash
-export MYNAKSH_LLM_PROVIDER=openai
-export MYNAKSH_OPENAI_API_KEY=sk-...
-export MYNAKSH_LLM_MODEL=gpt-4o-mini
+PANCHANG_API_KEY=hindutithi_live_
+OPENAI_API_KEY=sk-proj-
 ```
 
 ## Design notes
