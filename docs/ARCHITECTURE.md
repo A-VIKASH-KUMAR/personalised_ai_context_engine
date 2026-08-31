@@ -112,10 +112,10 @@ flowchart TD
     subgraph S5["Stage 5 — LLM Provider (app/services/llm.py)"]
         PICK{settings.llm_provider}
         MOCK[MockLLMProvider<br/>intent-specific template synthesis]
-        OAI[OpenAILLMProvider<br/>gpt-4o-mini · chat completions]
+        OAI[GeminiLLMProvider<br/>gemini-flash-latest · generateContent]
         MSGS --> PICK
         PICK -->|mock or no key| MOCK
-        PICK -->|openai + key| OAI
+        PICK -->|gemini + key| OAI
     end
 
     PCFG --> MOCK
@@ -167,7 +167,7 @@ Output → `(intent, confidence, reasoning)` where intent ∈ `career | relation
 - Hard cap `max_prompt_chars=4000` triggers aggressive JSON truncation if exceeded.
 
 ### 6. LLM generation — `app/services/llm.py`
-- `get_llm_provider()` picks `OpenAILLMProvider` (when `OPENAI_API_KEY` is set) or the deterministic `MockLLMProvider` (which synthesises grounded answers from `context_payload`).
+- `get_llm_provider()` picks `GeminiLLMProvider` (when `GOOGLE_API_KEY` is set) or the deterministic `MockLLMProvider` (which synthesises grounded answers from `context_payload`).
 - Returns `LLMResult { answer, confidence, sourcesUsed, latency_ms, prompt_chars }` → wrapped in `PersonalizeResponse` and sent back to the client.
 
 ## Personalization rules (from `app/config.py`)
